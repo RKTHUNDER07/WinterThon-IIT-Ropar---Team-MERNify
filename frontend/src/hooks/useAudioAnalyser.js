@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
-import { normalizeFrequencyData, calculateAverageVolume, calculateNoiseLevel } from '../utils/audioUtils'
+import { normalizeFrequencyData, calculateAverageVolume, calculateNoiseLevel, detectAmbientNoise } from '../utils/audioUtils'
 import { AUDIO_THRESHOLDS } from '../utils/thresholds'
 
 /**
@@ -10,6 +10,9 @@ export const useAudioAnalyser = (stream, isRecording) => {
   const [averageVolume, setAverageVolume] = useState(0)
   const [noiseLevel, setNoiseLevel] = useState(0)
   const [hasStaticNoise, setHasStaticNoise] = useState(false)
+  const [hasAmbientNoise, setHasAmbientNoise] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
+  const [ambientLevel, setAmbientLevel] = useState(0)
   
   const audioContextRef = useRef(null)
   const analyserRef = useRef(null)
@@ -59,6 +62,12 @@ export const useAudioAnalyser = (stream, isRecording) => {
       } else {
         setHasStaticNoise(false)
       }
+      
+      // Check for ambient noise (to verify mic is not muted)
+      const ambientResult = detectAmbientNoise(dataArray, AUDIO_THRESHOLDS)
+      setHasAmbientNoise(ambientResult.hasAmbientNoise)
+      setIsMuted(ambientResult.isMuted)
+      setAmbientLevel(ambientResult.ambientLevel)
 
       animationFrameRef.current = requestAnimationFrame(updateFrequency)
     }
@@ -80,6 +89,9 @@ export const useAudioAnalyser = (stream, isRecording) => {
     frequencyData,
     averageVolume,
     noiseLevel,
-    hasStaticNoise
+    hasStaticNoise,
+    hasAmbientNoise,
+    isMuted,
+    ambientLevel
   }
 }

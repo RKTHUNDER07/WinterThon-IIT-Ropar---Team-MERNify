@@ -44,3 +44,33 @@ export const calculateNoiseLevel = (dataArray, lowFreqCount = 20) => {
   const lowFreqSum = Array.from(dataArray.slice(0, lowFreqCount)).reduce((a, b) => a + b, 0)
   return lowFreqSum / lowFreqCount
 }
+
+/**
+ * Detect ambient noise to verify microphone is active (not muted)
+ * Even very small amounts of noise indicate the mic is active and not muted
+ */
+export const detectAmbientNoise = (dataArray, thresholds) => {
+  // Calculate overall average noise level
+  const avgLevel = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+  
+  // Calculate variance - ambient noise should have some variance
+  const variance = dataArray.reduce((acc, val) => {
+    const diff = val - avgLevel
+    return acc + (diff * diff)
+  }, 0) / dataArray.length
+  
+  // Even very small noise indicates mic is active (not muted)
+  // If there's ANY measurable signal above the muted threshold, mic is active
+  const hasAmbientNoise = avgLevel >= thresholds.MUTED_THRESHOLD && 
+                          avgLevel <= thresholds.AMBIENT_NOISE_MAX
+  
+  // Mic is muted only if signal is extremely low or zero (below muted threshold)
+  const isMuted = avgLevel < thresholds.MUTED_THRESHOLD
+  
+  return {
+    hasAmbientNoise,
+    isMuted,
+    ambientLevel: avgLevel,
+    variance
+  }
+}

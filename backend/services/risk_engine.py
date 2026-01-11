@@ -90,6 +90,11 @@ class RiskEngine:
             if self.spoof_detector.detect_muted_mic(audio_array):
                 risk_factors.append('muted_mic')
             
+            # Check ambient noise
+            ambient_result = self.spoof_detector.detect_ambient_noise(audio_array)
+            if ambient_result['is_muted']:
+                risk_factors.append('muted_mic')
+            
             # Determine risk level
             if len(risk_factors) >= 2:
                 risk_level = 'high'

@@ -79,3 +79,37 @@ class SpoofDetector:
         """Detect if microphone is muted or very quiet"""
         rms = np.mean(np.abs(audio_array))
         return rms < 0.001
+    
+    def detect_ambient_noise(self, audio_array, muted_threshold=0.0003):
+        """
+        Detect ambient noise to verify microphone is active (not muted)
+        Even very small amounts of noise indicate the mic is active
+        
+        Args:
+            audio_array: Audio signal
+            muted_threshold: Below this level, mic is considered muted (very low/no signal)
+        
+        Returns:
+            dict: {
+                'has_ambient_noise': bool,
+                'is_muted': bool,
+                'ambient_level': float,
+                'variance': float
+            }
+        """
+        rms = np.mean(np.abs(audio_array))
+        variance = np.var(audio_array)
+        
+        # Even very small noise (above muted threshold) indicates mic is active
+        # If there's ANY measurable signal above the muted threshold, mic is active
+        has_ambient = rms >= muted_threshold
+        
+        # Mic is muted only if signal is extremely low or zero (below muted threshold)
+        is_muted = rms < muted_threshold
+        
+        return {
+            'has_ambient_noise': has_ambient,
+            'is_muted': is_muted,
+            'ambient_level': float(rms),
+            'variance': float(variance)
+        }
