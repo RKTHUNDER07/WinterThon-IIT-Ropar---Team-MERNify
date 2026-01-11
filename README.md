@@ -25,9 +25,6 @@ VoiceShield is a real-time voice verification and audio integrity monitoring sys
 * 🧠 **Speaker Verification (Framework Ready)**
   ECAPA-TDNN–based speaker embedding and verification pipeline (placeholder).
 
-* ⚠️ **Risk Assessment Engine**
-  Real-time risk scoring with actionable recommendations.
-
 * 📝 **Live Speech-to-Text**
   Real-time transcription using the browser’s Web Speech API.
 
@@ -143,6 +140,7 @@ http://localhost:5173
 ## 📄 License
 This project is for academic and research purposes.
 Feel free to fork and extend with proper attribution.
+
 
 
 
