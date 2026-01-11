@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .gradient-bg {
+    @apply bg-gradient-to-br from-primary-500 to-primary-700;
+  }
+}
