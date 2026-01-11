@@ -14,12 +14,13 @@ export const FLASHCARD_INTERVALS = {
   // MINIMUM interval between flashcards (in milliseconds)
   // Change this to make flashcards appear sooner
   //   MIN_INTERVAL_MS: 2 * 60 * 1000, // 2 minutes
-  MIN_INTERVAL_MS: 20 * 1000, // 2 minutes
-
+  // MIN_INTERVAL_MS: 20 * 1000, // 2 minutes
+  MIN_INTERVAL_MS: 2000, // 2 seconds
+  MAX_INTERVAL_MS: 5000, // 5 seconds
   // MAXIMUM interval between flashcards (in milliseconds)
   // Change this to make flashcards appear later
   //   MAX_INTERVAL_MS: 5 * 60 * 1000, // 5 minutes
-  MAX_INTERVAL_MS: 40 * 1000, // 5 minutes
+  // MAX_INTERVAL_MS: 40 * 1000, // 5 minutes
 };
 
 /**

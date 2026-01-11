@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -311,20 +311,30 @@ const Dashboard = () => {
   }, [averageVolume, qualityScore]);
 
   // Flashcard timer - triggers flashcards at random intervals
-  const handleFlashcardTrigger = (phrase) => {
-    // Only show flashcard if not already showing one and user is logged in
-    // if (!showFlashcard && !isFlashcardRecording) {
-    //   setFlashcardPhrase(phrase);
-    //   setShowFlashcard(true);
-    //   setFlashcardTranscript(""); // Clear previous transcript
-    // }
+  // const handleFlashcardTrigger = (phrase) => {
+  //   // Only show flashcard if not already showing one and user is logged in
+  //   // if (!showFlashcard && !isFlashcardRecording) {
+  //   //   setFlashcardPhrase(phrase);
+  //   //   setShowFlashcard(true);
+  //   //   setFlashcardTranscript(""); // Clear previous transcript
+  //   // }
 
-    flashcardStartIndexRef.current = transcript.length;
-    setFlashcardPhrase(phrase);
-    setFlashcardTranscript("");
-    setShowFlashcard(true);
-    setIsFlashcardRecording(true);
-  };
+  //   flashcardStartIndexRef.current = transcript.length;
+  //   setFlashcardPhrase(phrase);
+  //   setFlashcardTranscript("");
+  //   setShowFlashcard(true);
+  //   setIsFlashcardRecording(true);
+  // };
+  const handleFlashcardTrigger = useCallback(
+    (phrase) => {
+      flashcardStartIndexRef.current = transcript.length;
+      setFlashcardPhrase(phrase);
+      setFlashcardTranscript("");
+      setShowFlashcard(true);
+      setIsFlashcardRecording(true);
+    },
+    [transcript]
+  );
 
   const config = getFlashcardConfig();
   // Only run flashcard timer when recording is active
@@ -335,11 +345,15 @@ const Dashboard = () => {
     recordingRef.current = isRecording;
   }, [isRecording]);
 
+  // useFlashcardTimer(
+  //   recordingRef.current && config.ENABLED,
+  //   handleFlashcardTrigger
+  // );
+
   useFlashcardTimer(
-    recordingRef.current && config.ENABLED,
+    isRecording && !showFlashcard && !isFlashcardRecording && config.ENABLED,
     handleFlashcardTrigger
   );
-
   // Handle flashcard recording start/stop
   const handleFlashcardStartRecording = async () => {
     try {
