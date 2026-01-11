@@ -72,36 +72,55 @@ This is a **full-stack web application** consisting of:
 ## 📂 Folder Structure
 
 ```
-VoiceShield/
-├── frontend/
-│   └── src/
-│       ├── components/
-│       │   ├── AudioVisualizer.jsx
-│       │   ├── StatusIndicator.jsx
-│       │   ├── TranscriptBox.jsx
-│       │   └── MicButton.jsx
-│       ├── hooks/
-│       │   ├── useMicrophone.js
-│       │   ├── useAudioAnalyser.js
-│       │   └── useSpeechToText.js
-│       ├── pages/
-│       │   ├── Login.jsx
-│       │   └── Dashboard.jsx
-│       └── main.jsx
+WIN3 VoiceShield – The Truth in Your Voice
 │
-├── backend/
-│   ├── app.py
-│   ├── routes.py
-│   ├── websocket.py
-│   ├── spoof_detection.py
-│   ├── risk_engine.py
-│   ├── services/
-│   │   └── speaker_verify.py
-│   └── audio/
-│       ├── preprocess.py
-│       └── feature_extract.py
+├── node_modules/
 │
+├── src/
+│   ├── components/
+│   │   ├── AudioVisualizer.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── FlashcardIntervalController.jsx
+│   │   ├── FlashcardNotification.jsx
+│   │   ├── FlashcardTask.jsx
+│   │   ├── Login.jsx
+│   │   ├── MicButton.jsx
+│   │   ├── Navbar.jsx
+│   │   ├── StatusIndicator.jsx
+│   │   └── TranscriptBox.jsx
+│   │
+│   ├── config/
+│   │   ├── FLASHCARD_INTERVALS.js
+│   │   └── flashcardConfig.js
+│   │
+│   ├── hooks/
+│   │   ├── useAudioAnalyser.js
+│   │   ├── useFlashcardTimer.js
+│   │   ├── useMicrophone.js
+│   │   └── useSpeechToText.js
+│   │
+│   ├── styles/
+│   │   └── globals.css
+│   │
+│   ├── utils/
+│   │   ├── audioUtils.js
+│   │   ├── phraseComparison.js
+│   │   ├── statusLogic.js
+│   │   └── thresholds.js
+│   │
+│   ├── App.jsx
+│   └── main.jsx
+│
+├── index.html
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── tailwind.config.js
+├── vite.config.js
+├── .gitignore
 └── README.md
+
+
 ```
 
 ---
@@ -194,5 +213,6 @@ http://localhost:5173
 
 This project is for academic and research purposes.
 Feel free to fork and extend with proper attribution.
+
 
 
