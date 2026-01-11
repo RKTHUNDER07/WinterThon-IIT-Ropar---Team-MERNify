@@ -134,14 +134,16 @@ http://localhost:5173
 ---
 ## 📌 Future Enhancements
 
-* Full ECAPA-TDNN speaker verification integration
 * ML-based spoof classification models
-* Admin dashboard for examiners
-* Cloud deployment (Docker + AWS/GCP)
+* Teacher/Admin dashboard
+* Voice-based video controls for ViBe platform
+* Ambient mode
+
 ---
 ## 📄 License
 This project is for academic and research purposes.
 Feel free to fork and extend with proper attribution.
+
 
 
 
