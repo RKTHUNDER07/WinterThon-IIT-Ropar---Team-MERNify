@@ -1,58 +1,76 @@
-import { useEffect, useRef, useState } from 'react'
-import { FLASHCARD_CONFIG, FLASHCARD_PHRASES, getFlashcardConfig } from '../config/flashcardConfig'
+import { useEffect, useRef, useState } from "react";
+import {
+  FLASHCARD_CONFIG,
+  FLASHCARD_PHRASES,
+  getFlashcardConfig,
+} from "../config/flashcardConfig";
 
 /**
  * Hook for managing flashcard task timing
  * Triggers flashcards at random intervals
  */
 export const useFlashcardTimer = (isEnabled, onFlashcardTrigger) => {
-  const intervalRef = useRef(null)
-  const config = getFlashcardConfig()
+  const intervalRef = useRef(null);
+  const config = getFlashcardConfig();
+  const isEnabledRef = useRef(isEnabled);
+
+  useEffect(() => {
+    isEnabledRef.current = isEnabled;
+  }, [isEnabled]);
 
   useEffect(() => {
     // Clear any existing timer
     if (intervalRef.current) {
-      clearTimeout(intervalRef.current)
-      intervalRef.current = null
+      clearTimeout(intervalRef.current);
+      intervalRef.current = null;
     }
-    
-    if (!isEnabled || !config.ENABLED) {
-      return
+
+    if (!isEnabledRef.current || !config.ENABLED) {
+      return;
     }
 
     const scheduleNextFlashcard = () => {
       // Calculate random interval between min and max
-      const minInterval = config.MIN_INTERVAL_MS
-      const maxInterval = config.MAX_INTERVAL_MS
-      const randomInterval = Math.random() * (maxInterval - minInterval) + minInterval
-
-      console.log(`[Flashcard Timer] Next flashcard in ${(randomInterval / 1000).toFixed(1)} seconds`)
+      const minInterval = config.MIN_INTERVAL_MS;
+      const maxInterval = config.MAX_INTERVAL_MS;
+      const randomInterval =
+        Math.random() * (maxInterval - minInterval) + minInterval;
 
       intervalRef.current = setTimeout(() => {
-        // Select random phrase
-        const randomIndex = Math.floor(Math.random() * FLASHCARD_PHRASES.length)
-        const phrase = FLASHCARD_PHRASES[randomIndex]
+        // Only trigger if still enabled
+        if (!isEnabledRef.current || !config.ENABLED) {
+          return;
+        }
 
-        console.log('[Flashcard Timer] Triggering flashcard:', phrase)
+        // Select random phrase
+        const randomIndex = Math.floor(
+          Math.random() * FLASHCARD_PHRASES.length
+        );
+        const phrase = FLASHCARD_PHRASES[randomIndex];
 
         // Trigger flashcard
-        onFlashcardTrigger(phrase)
+        onFlashcardTrigger(phrase);
 
-        // Schedule next flashcard (only if still enabled)
-        if (isEnabled && config.ENABLED) {
-          scheduleNextFlashcard()
-        }
-      }, randomInterval)
+        // Schedule next flashcard
+        scheduleNextFlashcard();
+      }, randomInterval);
+    };
+
+    // Schedule first flashcard only if enabled
+    if (isEnabledRef.current) {
+      scheduleNextFlashcard();
     }
-
-    // Schedule first flashcard
-    scheduleNextFlashcard()
 
     return () => {
       if (intervalRef.current) {
-        clearTimeout(intervalRef.current)
-        intervalRef.current = null
+        clearTimeout(intervalRef.current);
+        intervalRef.current = null;
       }
-    }
-  }, [isEnabled, onFlashcardTrigger, config.ENABLED, config.MIN_INTERVAL_MS, config.MAX_INTERVAL_MS])
-}
+    };
+  }, [
+    config.ENABLED,
+    config.MIN_INTERVAL_MS,
+    config.MAX_INTERVAL_MS,
+    onFlashcardTrigger,
+  ]);
+};

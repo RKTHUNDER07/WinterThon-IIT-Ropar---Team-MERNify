@@ -2,17 +2,22 @@
  * Flashcard Speaking Task Configuration
  *
  * Configure the intervals and phrases for the flashcard feature
+ *
+ * TO CHANGE FLASHCARD INTERVALS:
+ * Edit the file: src/config/FLASHCARD_INTERVALS.js
  */
+
+import { FLASHCARD_INTERVALS } from "./FLASHCARD_INTERVALS";
 
 // Random interval range (in milliseconds)
 export const FLASHCARD_CONFIG = {
   // Minimum interval between flashcards (in milliseconds)
-  MIN_INTERVAL_MS: 2 * 60 * 1000, // 2 minutes
-  // MIN_INTERVAL_MS: 10 * 1000, // 2 minutes
+  // EDIT FLASHCARD_INTERVALS.js TO CHANGE THIS
+  MIN_INTERVAL_MS: FLASHCARD_INTERVALS.MIN_INTERVAL_MS,
 
   // Maximum interval between flashcards (in milliseconds)
-  MAX_INTERVAL_MS: 5 * 60 * 1000, // 5 minutes
-  // MAX_INTERVAL_MS: 60 * 1000, // 5 minutes
+  // EDIT FLASHCARD_INTERVALS.js TO CHANGE THIS
+  MAX_INTERVAL_MS: FLASHCARD_INTERVALS.MAX_INTERVAL_MS,
 
   // Recording duration for each flashcard (in milliseconds)
   RECORDING_DURATION_MS: 10 * 1000, // 10 seconds

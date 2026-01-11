@@ -1,6 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Login from './components/Login'
-import Dashboard from './components/Dashboard'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
 
 function App() {
   return (
@@ -11,7 +16,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

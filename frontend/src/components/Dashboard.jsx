@@ -52,6 +52,9 @@ const Dashboard = () => {
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
+  const isRecordingPausedRef = useRef(false);
+  const flashcardStartIndexRef = useRef(0);
+  const isFlashcardModeRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -139,6 +142,7 @@ const Dashboard = () => {
   };
 
   const startAudioStreaming = () => {
+    console.log("[AudioStreaming] 🎙️ Starting audio streaming...");
     if (audioChunkIntervalRef.current) {
       clearInterval(audioChunkIntervalRef.current);
     }
@@ -162,11 +166,85 @@ const Dashboard = () => {
         // Check if we have actual audio data (not silence)
         const hasAudio = dataArray.some((sample) => Math.abs(sample) > 0.001);
         if (!hasAudio) {
+          console.log("[AudioStreaming] No audio detected, skipping...");
           return; // Skip sending if no audio
         }
 
+        console.log("[AudioStreaming] ✓ Audio detected, processing...");
+
         // Convert to base64
         const audioBase64 = audioBufferToBase64(dataArray);
+        console.log("[AudioStreaming] ✓ Audio converted to base64");
+
+        // Validate flashcard and control recording
+        try {
+          console.log(
+            "[Validation] 📤 Sending validation request to /api/audio/validate..."
+          );
+          const validationResponse = await axios.post("/api/audio/validate", {
+            audio: audioBase64,
+            user_id: localStorage.getItem("voiceshield_user"),
+            session_id: sessionId,
+          });
+
+          console.log(
+            "[Validation] ✓ Response received:",
+            validationResponse.data
+          );
+
+          // Backend returns: quality_score, spoof_score, risk_level, recommendations
+          const spoofScore = validationResponse.data?.spoof_score || 0;
+          const qualityScore = validationResponse.data?.quality_score || 0;
+
+          // Consider validation FAILED if spoof score is high (> 0.7)
+          const isSpoofed = spoofScore > 0.7;
+          const isLowQuality = qualityScore < 0.5;
+
+          // Validation fails if spoofing detected OR quality is too low
+          const isValidationFailed = isSpoofed || isLowQuality;
+
+          console.log(
+            `[Validation] 📊 Scores - Spoof: ${spoofScore.toFixed(
+              2
+            )}, Quality: ${qualityScore.toFixed(
+              2
+            )}, Failed: ${isValidationFailed}`
+          );
+
+          if (isValidationFailed) {
+            console.warn(
+              `[Validation] ❌ VALIDATION FAILED - Stopping recording`
+            );
+            console.warn(
+              `Reason: Spoofed=${isSpoofed} (${spoofScore.toFixed(
+                2
+              )}), LowQuality=${isLowQuality} (${qualityScore.toFixed(2)})`
+            );
+            handleStopRecording();
+            return; // Stop processing immediately
+          } else {
+            // Continue recording when validation passes
+            console.log("[Validation] ✅ PASSED - Recording continues");
+            isRecordingPausedRef.current = false;
+          }
+        } catch (error) {
+          console.error("[Validation] ❌ API Error:", error.message);
+          if (error.response) {
+            console.error("[Validation] Status:", error.response.status);
+            console.error("[Validation] Data:", error.response.data);
+          }
+          console.error("[Validation] Full error:", error);
+          // On error, continue recording
+          isRecordingPausedRef.current = false;
+        }
+
+        // Check if recording was stopped
+        if (!isRecording) {
+          console.log(
+            "[Recording] Recording state is false, exiting audio streaming"
+          );
+          return;
+        }
 
         // Send to backend via WebSocket
         if (socketRef.current && socketRef.current.connected) {
@@ -178,7 +256,7 @@ const Dashboard = () => {
           });
         }
 
-        // Also send via HTTP for validation
+        // Also send via HTTP for quality metrics (not flashcard validation)
         try {
           const response = await axios.post("/api/audio/validate", {
             audio: audioBase64,
@@ -235,17 +313,30 @@ const Dashboard = () => {
   // Flashcard timer - triggers flashcards at random intervals
   const handleFlashcardTrigger = (phrase) => {
     // Only show flashcard if not already showing one and user is logged in
-    if (!showFlashcard && !isFlashcardRecording) {
-      setFlashcardPhrase(phrase);
-      setShowFlashcard(true);
-      setFlashcardTranscript(""); // Clear previous transcript
-    }
+    // if (!showFlashcard && !isFlashcardRecording) {
+    //   setFlashcardPhrase(phrase);
+    //   setShowFlashcard(true);
+    //   setFlashcardTranscript(""); // Clear previous transcript
+    // }
+
+    flashcardStartIndexRef.current = transcript.length;
+    setFlashcardPhrase(phrase);
+    setFlashcardTranscript("");
+    setShowFlashcard(true);
+    setIsFlashcardRecording(true);
   };
 
   const config = getFlashcardConfig();
-  // Only run flashcard timer when recording is active and no flashcard is showing
+  // Only run flashcard timer when recording is active
+  // Use a ref to avoid constant timer resets from state changes
+  const recordingRef = useRef(isRecording);
+
+  useEffect(() => {
+    recordingRef.current = isRecording;
+  }, [isRecording]);
+
   useFlashcardTimer(
-    isRecording && !showFlashcard && !isFlashcardRecording && config.ENABLED,
+    recordingRef.current && config.ENABLED,
     handleFlashcardTrigger
   );
 
@@ -290,34 +381,49 @@ const Dashboard = () => {
   }, [flashcardSTT, isFlashcardRecording, showFlashcard]);
 
   // Clear transcript when flashcard closes
-  useEffect(() => {
-    if (!showFlashcard && !isFlashcardRecording) {
-      setFlashcardTranscript("");
-    }
-  }, [showFlashcard, isFlashcardRecording]);
+  // useEffect(() => {
+  //   if (!showFlashcard && !isFlashcardRecording) {
+  //     setFlashcardTranscript("");
+  //   }
+  // }, [showFlashcard, isFlashcardRecording]);
 
-  // Handle flashcard completion
+  useEffect(() => {
+    if (!isFlashcardModeRef.current) return;
+
+    const spoken = transcript.slice(flashcardStartIndexRef.current);
+    setFlashcardTranscript(spoken.trim());
+  }, [transcript]);
+
   const handleFlashcardComplete = (result) => {
-    setShowFlashcard(false);
-    setIsFlashcardRecording(false);
-    handleFlashcardStopRecording();
+    // Validate flashcard response
+    console.log("[Flashcard] Validation result:", result);
 
     if (result.success) {
-      setFlashcardNotification({
-        message: "Great! You successfully repeated the phrase.",
-        type: "success",
-      });
+      console.log("[Flashcard] ✅ PASSED - Continuing recording");
+      // Continue recording
+      isRecordingPausedRef.current = false;
     } else {
-      setFlashcardNotification({
-        message: "Failed to repeat the phrase.",
-        type: "error",
-      });
+      console.log("[Flashcard] ❌ FAILED - Stopping recording");
+      // Stop recording when flashcard validation fails
+      handleStopRecording();
     }
 
-    // Clear notification after 4 seconds
-    setTimeout(() => {
-      setFlashcardNotification(null);
-    }, 4000);
+    // Close flashcard UI
+    setShowFlashcard(false);
+    setIsFlashcardRecording(false);
+    setFlashcardTranscript("");
+
+    // EXIT flashcard mode
+    isFlashcardModeRef.current = false;
+
+    setFlashcardNotification({
+      message: result.success
+        ? "Great! You successfully repeated the phrase."
+        : "Failed to repeat the phrase.",
+      type: result.success ? "success" : "error",
+    });
+
+    setTimeout(() => setFlashcardNotification(null), 4000);
   };
 
   const handleFlashcardClose = () => {
