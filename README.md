@@ -125,7 +125,6 @@ npm run dev
 ```
 http://localhost:5173
 ```
-*(Demo login – use any credentials)*
 ---
 ## 🧪 Demo Use Cases
 * Online examinations
@@ -143,6 +142,7 @@ http://localhost:5173
 ## 📄 License
 This project is for academic and research purposes.
 Feel free to fork and extend with proper attribution.
+
 
 
 
