@@ -114,7 +114,6 @@ WIN3 VoiceShield – The Truth in Your Voice
 ## ▶️ Running the Project
 ### Setup
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
@@ -140,6 +139,7 @@ http://localhost:5173
 ## 📄 License
 This project is for academic and research purposes.
 Feel free to fork and extend with proper attribution.
+
 
 
 
